@@ -1,0 +1,269 @@
+{
+  "kind": "Template",
+  "apiVersion": "v1",
+  "metadata": {
+    "name": "wordpress-mysql-image-2",
+    "annotations": {
+      "description": "An example wordpress application with a MySQL database.  Note: the MySQL service created by this template uses non-persistent storage.  To setup persisted storage, change this template to use a persistent volume claim instead of emptydir.",
+      "tags": "instant-app,php,wordpress,mysql",
+      "iconClass": "icon-php"
+    }
+  },
+  "labels": {
+    "template": "wordpress-mysql-image-2"
+  },
+  "objects": [
+    {
+      "kind": "Service",
+      "apiVersion": "v1",
+      "metadata": {
+        "name": "wordpress-mysql-image-2",
+        "annotations": {
+          "description": "Exposes and load balances the application pods"
+        }
+      },
+      "spec": {
+        "ports": [
+          {
+            "name": "web",
+            "port": 8080,
+            "targetPort": 80
+          }
+        ],
+        "selector": {
+          "name": "wordpress-mysql-image-2"
+        }
+      }
+    },
+    {
+      "kind": "Route",
+      "apiVersion": "v1",
+      "metadata": {
+        "name": "wordpress-mysql-image-2"
+      },
+      "spec": {
+        "host": "${APPLICATION_DOMAIN}",
+        "to": {
+          "kind": "Service",
+          "name": "wordpress-mysql-image-2"
+        }
+      }
+    },
+    {
+      "kind": "DeploymentConfig",
+      "apiVersion": "v1",
+      "metadata": {
+        "name": "wordpress-mysql-image-2",
+        "annotations": {
+          "description": "Defines how to deploy the application server"
+        }
+      },
+      "spec": {
+        "strategy": {
+          "type": "Recreate"
+        },
+        "triggers": [
+          {
+            "type": "ConfigChange"
+          }
+        ],
+        "replicas": 1,
+        "selector": {
+          "name": "wordpress-mysql-image-2"
+        },
+        "template": {
+          "metadata": {
+            "name": "wordpress-mysql-image-2",
+            "labels": {
+              "name": "wordpress-mysql-image-2"
+            }
+          },
+          "spec": {
+            "containers": [
+              {
+                "name": "wordpress-mysql-image-2",
+                "image": "wordpress",
+                "ports": [
+                  {
+                    "containerPort": 80
+                  }
+                ],
+                "env": [
+                  {
+                    "name": "WORDPRESS_DB_HOST",
+                    "value": "mysql"
+                  },
+                  {
+                    "name": "WORDPRESS_DB_NAME",
+                    "value": "${DATABASE_NAME}"
+                  },
+                  {
+                    "name": "WORDPRESS_DB_USER",
+                    "value": "${DATABASE_USER}"
+                  },
+                  {
+                    "name": "WORDPRESS_DB_PASSWORD",
+                    "value": "${DATABASE_PASSWORD}"
+                  }
+                ],
+                "volumeMounts": [
+                  {
+                    "name": "${DATABASE_SERVICE_NAME}-data",
+                    "mountPath": "/var/lib/mysql/data"
+                  },
+		  {
+		    "name": "wordpress-persistent-storage",
+                    "mountPath": "/var/www/html"
+                  }
+                ]
+              }
+            ],
+            "volumes": [
+              {
+                "name": "${DATABASE_SERVICE_NAME}-data",
+                "emptyDir": {
+                  "medium": ""
+                }
+              },
+              {
+                "name": "wordpress-persistent-storage",
+                "emptyDir": {
+                  "medium": ""
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "kind": "Service",
+      "apiVersion": "v1",
+      "metadata": {
+        "name": "${DATABASE_SERVICE_NAME}",
+        "annotations": {
+          "description": "Exposes the database server"
+        }
+      },
+      "spec": {
+        "ports": [
+          {
+            "name": "mysql",
+            "port": 3306,
+            "targetPort": 3306
+          }
+        ],
+        "selector": {
+          "name": "${DATABASE_SERVICE_NAME}"
+        }
+      }
+    },
+    {
+      "kind": "DeploymentConfig",
+      "apiVersion": "v1",
+      "metadata": {
+        "name": "${DATABASE_SERVICE_NAME}",
+        "annotations": {
+          "description": "Defines how to deploy the database"
+        }
+      },
+      "spec": {
+        "strategy": {
+          "type": "Recreate"
+        },
+        "triggers": [
+          {
+            "type": "ConfigChange"
+          }
+        ],
+        "replicas": 1,
+        "selector": {
+          "name": "${DATABASE_SERVICE_NAME}"
+        },
+        "template": {
+          "metadata": {
+            "name": "${DATABASE_SERVICE_NAME}",
+            "labels": {
+              "name": "${DATABASE_SERVICE_NAME}"
+            }
+          },
+          "spec": {
+            "containers": [
+              {
+                "name": "mysql",
+                "image": "${MYSQL_IMAGE}",
+                "ports": [
+                  {
+                    "containerPort": 3306
+                  }
+                ],
+                "env": [
+                  {
+                    "name": "MYSQL_USER",
+                    "value": "${DATABASE_USER}"
+                  },
+                  {
+                    "name": "MYSQL_PASSWORD",
+                    "value": "${DATABASE_PASSWORD}"
+                  },
+                  {
+                    "name": "MYSQL_DATABASE",
+                    "value": "${DATABASE_NAME}"
+                  }
+                ],
+                "volumeMounts": [
+                  {
+                    "name": "${DATABASE_SERVICE_NAME}-data",
+                    "mountPath": "/var/lib/mysql/data"
+                  }
+                ]
+              }
+            ],
+            "volumes": [
+              {
+                "name": "${DATABASE_SERVICE_NAME}-data",
+                "emptyDir": {
+                  "medium": ""
+                }
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "parameters": [
+    {
+      "name": "APPLICATION_DOMAIN",
+      "description": "The exposed hostname that will route to the wordpress service, if left blank a value will be defaulted.",
+      "value": ""
+    },
+    {
+      "name": "DATABASE_SERVICE_NAME",
+      "description": "Database service name",
+      "value": "mysql"
+    },
+    {
+      "name": "DATABASE_NAME",
+      "description": "Database name",
+      "value": "wordpress"
+    },
+    {
+      "name": "DATABASE_USER",
+      "description": "Database user name",
+      "value": "wordpress"
+    },
+    {
+      "name": "DATABASE_PASSWORD",
+      "description": "Database user password",
+      "generate": "expression",
+      "from": "[a-zA-Z0-9]{16}"
+    },
+    {
+      "name": "MYSQL_IMAGE",
+      "description": "Image to use for mysql",
+      "value": "openshift/mysql-55-centos7"      
+    }
+  ]
+}
+
