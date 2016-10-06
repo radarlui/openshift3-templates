@@ -526,7 +526,7 @@
         {
             "name": "CONTEXT_DIR",
             "description": "Path within Git project to build; empty for root project directory.",
-            "value": "amq62-ssl-s2i"
+            "value": "amq-ssl-s2i"
         },
         {
             "name": "GITHUB_WEBHOOK_SECRET",
