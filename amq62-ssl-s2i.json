@@ -501,6 +501,36 @@
             "required": false
         },
         {
+            "description": "Name of a secret containing SSL related files",
+            "name": "AMQ_SECRET",
+            "value": "amq-app-secret",
+            "required": true
+        },
+        {
+            "description": "SSL trust store filename",
+            "name": "AMQ_TRUSTSTORE",
+            "value": "broker.ts",
+            "required": true
+        },
+        {
+            "description": "SSL trust store password",
+            "name": "AMQ_TRUSTSTORE_PASSWORD",
+            "value": "",
+            "required": true
+        },
+        {
+            "description": "SSL key store filename",
+            "name": "AMQ_KEYSTORE",
+            "value": "broker.ks",
+            "required": true
+        },
+        {
+            "description": "Password for accessing SSL keystore",
+            "name": "AMQ_KEYSTORE_PASSWORD",
+            "value": "",
+            "required": true
+        },
+        {
             "description": "The discovery agent type to use for discovering mesh endpoints.  'dns' will use OpenShift's DNS service to resolve endpoints.  'kube' will use Kubernetes REST API to resolve service endpoints.  If using 'kube' the service account for the pod must have the 'view' role, which can be added via 'oc policy add-role-to-user view system:serviceaccount:<namespace>:default' where <namespace> is the project namespace.",
             "name": "AMQ_MESH_DISCOVERY_TYPE",
             "value": "kube",
