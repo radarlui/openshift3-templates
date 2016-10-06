@@ -179,6 +179,7 @@
                     "description": "The broker's OpenWire (SSL) port."
                 }
             }
+        },
         {
             "kind": "ImageStream",
             "apiVersion": "v1",
