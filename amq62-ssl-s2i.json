@@ -405,7 +405,7 @@
                                     },
                                     {
                                         "name": "AMQ_MESH_SERVICE_NAME",
-                                        "value": "${APPLICATION_NAME}-amq-tcp"
+                                        "value": "${APPLICATION_NAME}-tcp"
                                     },
                                     {
                                         "name": "AMQ_MESH_SERVICE_NAMESPACE",
