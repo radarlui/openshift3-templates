@@ -154,6 +154,18 @@
             },
             "spec": {
                 "strategy": {
+                    "recreateParams": {
+                        "pre": {
+                            "execNewPod": {
+                                "command": [
+                                    "/usr/bin/sleep",
+                                    "10"
+                                ],
+                                "containerName": "${APPLICATION_NAME}"
+                            },
+                            "failurePolicy": "Ignore"
+                        }
+                    },
                     "type": "Recreate"
                 },
                 "triggers": [
