@@ -17,7 +17,7 @@ objects:
     strategy:
       type: "JenkinsPipeline"
       jenkinsPipelineStrategy:
-        jenkinsfile: "node {\n  stage 'Build'\n  openshiftBuild(buildConfig: '${DEV_RESOURCE_NAME}', namespace: '${PROJECT_NAME}', showBuildLogs: 'true')\n  \n  stage 'Deploy Dev'\n  openshiftDeploy(deploymentConfig: '${DEV_RESOURCE_NAME}', namespace: '${PROJECT_NAME}')\n\n  stage 'Test Dev'\n  sh 'curl -s http://${DEV_RESOURCE_NAME}.${PROJECT_NAME}.svc.cluster.local:8080'\n  sh 'curl -s http://${DEV_RESOURCE_NAME}.${PROJECT_NAME}.svc.cluster.local:8080 '\n  \n  stage 'Deploy Live'\n  input 'Promote the Dev image to Live?'\n  openshiftTag(srcStream: '${IMAGE_STREAM}', srcTag: 'latest', destStream: '${IMAGE_STREAM}', destTag: 'live', namespace: '${PROJECT_NAME}', destinationNamespace: '${PROJECT_NAME}')\n  // openshiftDeploy(deploymentConfig: '${LIVE_RESOURCE_NAME}', namespace: '${PROJECT_NAME}')\n}"
+        jenkinsfile: "node {\n  stage 'Build'\n  openshiftBuild(buildConfig: '${DEV_RESOURCE_NAME}', namespace: '${PROJECT_NAME}', showBuildLogs: 'true')\n  \n  stage 'Deploy Dev'\n  openshiftDeploy(deploymentConfig: '${DEV_RESOURCE_NAME}', namespace: '${PROJECT_NAME}')\n\n  stage 'Test Dev'\n  sh 'curl -s http://${DEV_RESOURCE_NAME}.${PROJECT_NAME}.svc.cluster.local:8080 | grep \"CakePHP\" '\n    \n  stage 'Deploy Live'\n  input 'Promote the Dev image to Live?'\n  //openshiftTag(srcStream: '${IMAGE_STREAM}', srcTag: 'latest', destStream: '${IMAGE_STREAM}', destTag: 'live', namespace: '${PROJECT_NAME}', destinationNamespace: '${PROJECT_NAME}')\n  openshiftDeploy(deploymentConfig: '${LIVE_RESOURCE_NAME}', namespace: '${PROJECT_NAME}-Prod')\n}"
     triggers:
     - github:
         secret: ${GITHUB_TRIGGER_SECRET}
@@ -30,7 +30,7 @@ parameters:
   displayName: Pipeline name
   name: PIPELINE_NAME
   required: true
-  value: nationalparks-pipeline
+  value: cakephp-mysql-pipeline
 - description: Name of the project where the Dev and Live containers are deployed
   displayName: Project name
   name: PROJECT_NAME
@@ -44,7 +44,7 @@ parameters:
   displayName: Live resource name
   name: LIVE_RESOURCE_NAME
   required: true
-  value: cakephp-mysql-example-live
+  value: cakephp-mysql-example
 - description: Name of the ImageStream
   displayName: ImageStream name
   name: IMAGE_STREAM
