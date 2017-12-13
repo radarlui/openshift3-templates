@@ -1,0 +1,114 @@
+apiVersion: v1
+kind: Template
+metadata:
+  creationTimestamp: null
+  name: mongodb-replicaset-template
+objects:
+- apiVersion: v1
+  kind: Service
+  metadata:
+    annotations:
+      service.alpha.kubernetes.io/tolerate-unready-endpoints: "true"
+    creationTimestamp: null
+    labels:
+      name: mongodb-replset-internal-wkr
+    name: mongodb-replset-internal-wkr
+  spec:
+    clusterIP: None
+    ports:
+    - name: mongodb
+      port: 27017
+      protocol: TCP
+      targetPort: 27017
+    selector:
+      name: mongodb-replset-internal-wkr
+    sessionAffinity: None
+    type: ClusterIP
+  status:
+    loadBalancer: {}
+- apiVersion: apps/v1beta1
+  kind: StatefulSet
+  metadata:
+    creationTimestamp: null
+    generation: 1
+    labels:
+      app: mongodb-replset-internal-wkr
+      template: mongodb-replset-internal-wkr
+    name: mongodb
+  spec:
+    replicas: 3
+    selector:
+      matchLabels:
+        name: mongodb-replset-internal-wkr
+    serviceName: mongodb-replset-internal-wkr
+    template:
+      metadata:
+        creationTimestamp: null
+        labels:
+          name: mongodb-replset-internal-wkr
+      spec:
+        containers:
+        - command:
+          - sh
+          - -c
+          - run-mongod-replication & run-mongod-replication initiate
+          env:
+          - name: MONGODB_USER
+            value: admin
+          - name: MONGODB_PASSWORD
+            value: admin123
+          - name: MONGODB_DATABASE
+            value: ottcms
+          - name: MONGODB_ADMIN_PASSWORD
+            value: admin123
+          - name: MONGODB_REPLICA_NAME
+            value: rs0
+          - name: MONGODB_SERVICE_NAME
+            value: mongodb-replset-internal-wkr
+          - name: MONGODB_KEYFILE_VALUE
+            value: LC2V3rQ4IBm3hjikfoMFoFxPv2F4DmeU0yEmqkbyIxWo4ry36It6xIB3SOI0CDnwxIMk4BEPiakwWchEXpsueb7MC3yXf1SnHifbhE7JJcAy4jTNWAUA3rpqosWgIb1xPRdQ3yGxqf1enewAdQtQ8WHcoliq0Vkf7lu0JcWLoUCPS6Hev3CGcBgoXwEYw2fawQXVstEE5RgcrpulHL7OoN4gtADJYSfUgMdKLdnc1xXrx6XuH7dE4hWWUJvkPil
+          - name: MONGODB_INITIAL_REPLICA_COUNT
+            value: "3"
+          image: openshift/mongodb-24-centos7
+          imagePullPolicy: Always
+          name: mongodb
+          ports:
+          - containerPort: 27017
+            protocol: TCP
+          readinessProbe:
+            failureThreshold: 3
+            initialDelaySeconds: 15
+            periodSeconds: 10
+            successThreshold: 1
+            tcpSocket:
+              port: 27017
+            timeoutSeconds: 1
+          resources: {}
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+          - mountPath: /var/lib/mongodb/data
+            name: mongodb-data
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext: {}
+        terminationGracePeriodSeconds: 30
+    volumeClaimTemplates:
+    - metadata:
+        creationTimestamp: null
+        labels:
+          app: mongodb
+          replset_seed: wkr
+        name: mongodb-data
+      spec:
+        accessModes:
+        - ReadWriteOnce
+        resources:
+          requests:
+            storage: 1Gi
+      status:
+        phase: Pending
+  status:
+    observedGeneration: 1
+    replicas: 1
